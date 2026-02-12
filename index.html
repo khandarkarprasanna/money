@@ -1,138 +1,184 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Daily Money Tracker</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+  <title>Daily Money Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 320px;
-        }
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 40px;
+      transition: 0.3s;
+    }
 
-        .tracker {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 20px 0;
-        }
+    .light {
+      background-color: #f4f6f9;
+      color: #000;
+    }
 
-        .icon-btn {
-            font-size: 28px;
-            cursor: pointer;
-            padding: 10px;
-            user-select: none;
-        }
+    .dark {
+      background-color: #121212;
+      color: white;
+    }
 
-        .amount-box {
-            background: #f9f9f9;
-            padding: 15px 20px;
-            border-radius: 12px;
-            font-size: 28px;
-            font-weight: bold;
-            min-width: 120px;
-        }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      display: inline-block;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
 
-        .quick-buttons button {
-            margin: 5px;
-            padding: 8px 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            background: #4CAF50;
-            color: white;
-        }
+    .dark .container {
+      background: #1e1e1e;
+    }
 
-        .quick-buttons button:hover {
-            opacity: 0.9;
-        }
+    h1 {
+      margin-bottom: 5px;
+    }
 
-        .reset {
-            margin-top: 12px;
-            font-size: 12px;
-            color: gray;
-            cursor: pointer;
-        }
-    </style>
+    .amount {
+      font-size: 48px;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 12px 18px;
+      margin: 6px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .green { background-color: #2ecc71; color: white; }
+    .blue { background-color: #3498db; color: white; }
+    .red { background-color: #e74c3c; color: white; }
+    .gray { background-color: #555; color: white; }
+
+    input {
+      padding: 10px;
+      font-size: 16px;
+      width: 120px;
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .alert {
+      color: red;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+  </style>
 </head>
-<body>
 
-<div class="card">
-    <div>Today's Total</div>
+<body class="light">
 
-    <div class="tracker">
-        <div class="icon-btn" onclick="subtractOne()">➖</div>
-        <div class="amount-box" id="total">₹0</div>
-        <div class="icon-btn" onclick="addOne()">➕</div>
-    </div>
+<div class="container">
+  <h1>💰 Daily Spend Tracker</h1>
+  <p>Make spending painful again.</p>
 
-    <div class="quick-buttons">
-        <button onclick="addAmount(50)">+50</button>
-        <button onclick="addAmount(100)">+100</button>
-        <button onclick="addAmount(500)">+500</button>
-    </div>
+  <div class="amount">₹ <span id="total">0</span></div>
 
-    <div class="reset" onclick="resetToday()">Reset Today</div>
+  <div>
+    <button class="green" onclick="addAmount(1)">+1</button>
+    <button class="blue" onclick="addAmount(-1)">-1</button>
+    <button class="red" onclick="reset()">Reset</button>
+  </div>
+
+  <h3>Quick Add</h3>
+  <div>
+    <button class="gray" onclick="addAmount(5)">+5</button>
+    <button class="gray" onclick="addAmount(10)">+10</button>
+    <button class="gray" onclick="addAmount(50)">+50</button>
+    <button class="gray" onclick="addAmount(100)">+100</button>
+    <button class="gray" onclick="addAmount(500)">+500</button>
+  </div>
+
+  <h3>Manual Entry</h3>
+  <input type="number" id="manual" placeholder="Enter amount" inputmode="numeric">
+  <button class="green" onclick="addManual()">Add</button>
+
+  <h3>Daily Limit</h3>
+  <input type="number" id="limitInput" placeholder="Set limit">
+  <button class="blue" onclick="setLimit()">Set</button>
+
+  <div id="alertBox" class="alert"></div>
+
+  <br>
+  <button onclick="toggleTheme()">🌙 Toggle Dark Mode</button>
+
 </div>
 
 <script>
-    const todayKey = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
 
-    function loadMoney() {
-        const saved = localStorage.getItem(todayKey);
-        document.getElementById("total").innerText =
-            "₹" + (saved ? saved : 0);
+  let savedDate = localStorage.getItem("date");
+  let total = parseInt(localStorage.getItem("total")) || 0;
+  let limit = parseInt(localStorage.getItem("limit")) || 0;
+
+  if (savedDate !== today) {
+    total = 0;
+    localStorage.setItem("date", today);
+    localStorage.setItem("total", 0);
+  }
+
+  document.getElementById("total").innerText = total;
+
+  function save() {
+    localStorage.setItem("total", total);
+  }
+
+  function update() {
+    document.getElementById("total").innerText = total;
+    save();
+    checkLimit();
+  }
+
+  function addAmount(value) {
+    total += value;
+    if (total < 0) total = 0;
+    update();
+  }
+
+  function addManual() {
+    let value = parseInt(document.getElementById("manual").value);
+    if (!isNaN(value)) {
+      total += value;
+      document.getElementById("manual").value = "";
+      update();
     }
+  }
 
-    function getCurrent() {
-        let current = localStorage.getItem(todayKey);
-        return current ? parseInt(current) : 0;
+  function reset() {
+    total = 0;
+    update();
+  }
+
+  function setLimit() {
+    limit = parseInt(document.getElementById("limitInput").value);
+    localStorage.setItem("limit", limit);
+    checkLimit();
+  }
+
+  function checkLimit() {
+    if (limit > 0 && total >= limit) {
+      document.getElementById("alertBox").innerText =
+        "⚠️ You crossed your daily limit!";
+    } else {
+      document.getElementById("alertBox").innerText = "";
     }
+  }
 
-    function saveAmount(amount) {
-        localStorage.setItem(todayKey, amount);
-        loadMoney();
-    }
-
-    function addOne() {
-        let current = getCurrent();
-        saveAmount(current + 1);
-    }
-
-    function subtractOne() {
-        let current = getCurrent();
-        if (current > 0) {
-            saveAmount(current - 1);
-        }
-    }
-
-    function addAmount(value) {
-        let current = getCurrent();
-        saveAmount(current + value);
-    }
-
-    function resetToday() {
-        localStorage.removeItem(todayKey);
-        loadMoney();
-    }
-
-    loadMoney();
+  function toggleTheme() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
 </script>
-
 
 </body>
 </html>
