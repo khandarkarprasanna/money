@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Money Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 320px;
+        }
+
+        .tracker {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .icon-btn {
+            font-size: 28px;
+            cursor: pointer;
+            padding: 10px;
+            user-select: none;
+        }
+
+        .amount-box {
+            background: #f9f9f9;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 28px;
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+        .quick-buttons button {
+            margin: 5px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+        }
+
+        .quick-buttons button:hover {
+            opacity: 0.9;
+        }
+
+        .reset {
+            margin-top: 12px;
+            font-size: 12px;
+            color: gray;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div>Today's Total</div>
+
+    <div class="tracker">
+        <div class="icon-btn" onclick="subtractOne()">➖</div>
+        <div class="amount-box" id="total">₹0</div>
+        <div class="icon-btn" onclick="addOne()">➕</div>
+    </div>
+
+    <div class="quick-buttons">
+        <button onclick="addAmount(50)">+50</button>
+        <button onclick="addAmount(100)">+100</button>
+        <button onclick="addAmount(500)">+500</button>
+    </div>
+
+    <div class="reset" onclick="resetToday()">Reset Today</div>
+</div>
+
+<script>
+    const todayKey = new Date().toISOString().split('T')[0];
+
+    function loadMoney() {
+        const saved = localStorage.getItem(todayKey);
+        document.getElementById("total").innerText =
+            "₹" + (saved ? saved : 0);
+    }
+
+    function getCurrent() {
+        let current = localStorage.getItem(todayKey);
+        return current ? parseInt(current) : 0;
+    }
+
+    function saveAmount(amount) {
+        localStorage.setItem(todayKey, amount);
+        loadMoney();
+    }
+
+    function addOne() {
+        let current = getCurrent();
+        saveAmount(current + 1);
+    }
+
+    function subtractOne() {
+        let current = getCurrent();
+        if (current > 0) {
+            saveAmount(current - 1);
+        }
+    }
+
+    function addAmount(value) {
+        let current = getCurrent();
+        saveAmount(current + value);
+    }
+
+    function resetToday() {
+        localStorage.removeItem(todayKey);
+        loadMoney();
+    }
+
+    loadMoney();
+</script>
+
+
+</body>
+</html>
